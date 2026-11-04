@@ -1,5 +1,11 @@
 from django.db import models
 from django.urls import reverse
+# TaggableManager는 taggit.managers에서 가져온다.
+# 예전에 "from taggit_managers import ..."를 추가했다가 없는 모듈이라
+# ModuleNotFoundError로 서버가 안 떴다. (그 줄은 지워야 한다)
+from taggit.managers import TaggableManager
+from django.contrib.auth.models import User
+from django.utils.text import slugify
 
 class Post(models.Model):
     title = models.CharField(verbose_name='TITLE', max_length=50)
@@ -8,6 +14,8 @@ class Post(models.Model):
     content = models.TextField('CONTENT')
     create_dt = models.DateTimeField('CREATE DATE',auto_now_add=True)
     modify_dt = models.DateTimeField('MODIFY DATE',auto_now=True)
+    tags = TaggableManager(blank=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='OWNER', blank=True, null=True)
 
     class Meta:
         verbose_name = 'post'
@@ -26,6 +34,10 @@ class Post(models.Model):
 
     def get_next(self):
         return self.get_next_by_modify_dt()
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title, allow_unicode=True)
+        super().save(*args, **kwargs)
     
 
 # Create your models here.

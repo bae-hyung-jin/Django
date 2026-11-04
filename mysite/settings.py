@@ -43,6 +43,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "bookmark.apps.BookmarkConfig",
     "blog.apps.BlogConfig",
+    # taggit은 이 AppConfig 한 줄로만 등록한다.
+    # 예전에 아래쪽에 "taggit"을 또 적어 뒀더니 앱 라벨이 중복되어
+    # "Application labels aren't unique, duplicates: taggit" 오류로 서버가 안 떴다.
+    "taggit.apps.TaggitAppConfig",
+    # 템플릿의 {% load taggit_templatetags2_tags %} (태그 표시줄, 태그 클라우드)에 필요.
+    # pip install django-taggit-templatetags2 가 안 되어 있으면 ModuleNotFoundError가 난다.
+    "taggit_templatetags2",
+    "widget_tweaks",
+    "photo.apps.PhotoConfig",
 ]
 
 MIDDLEWARE = [
@@ -60,7 +69,7 @@ ROOT_URLCONF = 'mysite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR, 'templates'],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,10 +131,16 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'static']   # DIRS는 목록이라 [ ] 필요 (MEDIA_ROOT는 경로 하나라 [ ] 없음)
 
 MEDIA_URL= '/media/'
-MEDIA_ROOT = [BASE_DIR / 'media']
+MEDIA_ROOT = BASE_DIR / 'media'
+
+TAGGIT_CASE_INSENSITIVE = True
+TAGGIT_LIMIT = 50 #default=10
+
+DISQUS_SHORTNAME = 'pydjango-web-programming-b9y54rcpeq'  # 내 Disqus 사이트의 shortname (책 예제 값 'pydjango-web-programming'은 남의 사이트라 댓글이 내 관리자 페이지에 안 보임)
+DISQUS_MY_DOMAIN = 'http://127.0.0.1:8000'
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
@@ -135,3 +150,6 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
