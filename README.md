@@ -136,7 +136,24 @@ python manage.py runserver
 python manage.py createsuperuser
 ```
 
-## 6. 운영 환경 설정
+## 6. GitHub 기본 브랜치 변경
+
+GitHub 저장소에서 기본 브랜치를 변경하려면 다음 순서로 진행합니다.
+
+1. 저장소의 **Settings**를 엽니다.
+2. 왼쪽 메뉴에서 **Branches**를 선택합니다.
+3. **Default branch** 오른쪽의 연필 아이콘을 클릭합니다.
+4. 원하는 브랜치를 선택하고 **Update**를 클릭합니다.
+5. 확인 창에서 변경을 승인합니다.
+
+GitHub CLI에서는 다음 명령을 사용할 수 있습니다.
+
+```bash
+gh repo edit bae-hyung-jin/Django \
+  --default-branch bae-hyung-jin-project-review
+```
+
+## 7. 운영 환경 설정
 
 운영 환경에서는 개발용 기본값을 사용하지 말고 다음 환경 변수를 설정합니다.
 
