@@ -146,6 +146,7 @@ CSRF_TRUSTED_ORIGINS = [
         'http://127.0.0.1:8080', 'http://127.0.0.1',
         'http://localhost:8080', 'http://localhost',
         'https://*.app.github.dev',
+        'https://localhost:8000',
 ]
 
 TAGGIT_CASE_INSENSITIVE = True
