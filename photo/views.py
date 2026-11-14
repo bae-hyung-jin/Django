@@ -17,9 +17,6 @@ class AlbumLV(ListView):
 class AlbumDV(DetailView):
     model = Album
 
-class PhotoDV(DetailView):
-    model = Photo
-
 #--- Create/Change-list/Update/Delete for Photo
 class PhotoCV(LoginRequiredMixin, CreateView):
     model = Photo
@@ -29,6 +26,11 @@ class PhotoCV(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.owner = self.request.user
         return super().form_valid(form)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['album'].queryset = Album.objects.filter(owner=self.request.user)
+        return form
 
 
 class PhotoChangeLV(LoginRequiredMixin, ListView):
@@ -42,6 +44,11 @@ class PhotoUV(OwnerOnlyMixin, UpdateView):
     model = Photo
     fields = ('album', 'title', 'description', 'image')
     success_url = reverse_lazy('photo:index')
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['album'].queryset = Album.objects.filter(owner=self.request.user)
+        return form
 
 class PhotoDelV(OwnerOnlyMixin, DeleteView):
     model = Photo

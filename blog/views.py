@@ -97,9 +97,7 @@ class TaggedojectLV(ListView):
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    fields = ['title', 'slug', 'description', 'content', 'tags']
-    initial = {'slug': 'auto-filling-do-not-input'}
-    #fields = ['title', 'slug', 'description', 'content', 'tags']
+    fields = ['title', 'description', 'content', 'tags']
     success_url = reverse_lazy('blog:index')
 
     def form_valid(self, form):
@@ -114,7 +112,7 @@ class PostChangeLV(LoginRequiredMixin, ListView):
 
 class PostUpdateView(OwnerOnlyMixin, UpdateView):
     model = Post
-    fields = ['title', 'slug', 'description', 'content', 'tags']
+    fields = ['title', 'description', 'content', 'tags']
     success_url = reverse_lazy('blog:index')
 
 class PostDeleteView(OwnerOnlyMixin, DeleteView):

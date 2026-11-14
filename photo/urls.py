@@ -30,7 +30,7 @@ urlpatterns = [
     path('album/<int:pk>/delete/', views.AlbumDelV.as_view(), name='album_delete'),
 
     #Example: /photo/photo/add/
-    path('photo/add', views.PhotoCV.as_view(), name='photo_add'),
+    path('photo/add/', views.PhotoCV.as_view(), name='photo_add'),
 
     #Example: /photo/photo/change/
     path('photo/change/', views.PhotoChangeLV.as_view(), name='photo_change'),
