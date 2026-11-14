@@ -21,15 +21,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+with open('/etc/django/secret_key.txt') as f:
+    SECRET_KEY = f.read().strip()
+
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
     "django-insecure-local-development-key"
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['192.168.25.101','localhost','127.0.0.1']
+ALLOWED_HOSTS = ['172.25.17.52','localhost','127.0.0.1']
 
 
 # Application definition
@@ -90,7 +93,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3'
+        'NAME': BASE_DIR / 'db' / 'db.sqlite3'
     }
 }
 
@@ -130,11 +133,21 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'www_dir' / 'static'  # collectstatic 명령으로 모은 정적 파일이 들어갈 경로
 
 STATICFILES_DIRS = [BASE_DIR / 'static']   # DIRS는 목록이라 [ ] 필요 (MEDIA_ROOT는 경로 하나라 [ ] 없음)
 
 MEDIA_URL= '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#4개 라인 추가
+CSRF_TRUSTED_ORIGINS = [
+        'http://127.0.0.1:8080', 'http://127.0.0.1',
+        'http://localhost:8080', 'http://localhost',
+]
 
 TAGGIT_CASE_INSENSITIVE = True
 TAGGIT_LIMIT = 50 #default=10
