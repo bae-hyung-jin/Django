@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['172.25.17.52','localhost','127.0.0.1']
 
@@ -145,6 +145,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CSRF_TRUSTED_ORIGINS = [
         'http://127.0.0.1:8080', 'http://127.0.0.1',
         'http://localhost:8080', 'http://localhost',
+        'https://*.app.github.dev',
 ]
 
 TAGGIT_CASE_INSENSITIVE = True
