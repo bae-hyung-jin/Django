@@ -2,6 +2,42 @@
 
 Django 수업 실습을 기반으로 Bookmark, Blog, Photo 기능을 통합한 웹 애플리케이션입니다.
 
+## 이번 수정 내역
+
+### 실행 환경 및 설정
+
+- `requirements.txt`
+  - `django-taggit`, `django-taggit-templatetags2`, `django-widget-tweaks`, `Pillow` 의존성 추가
+- `mysite/settings.py`
+  - 잘못된 `MAILERS` 설정을 `EMAIL_BACKEND`로 수정
+  - `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS` 환경 변수 지원
+
+### 모델 및 게시글
+
+- `bookmark/models.py`
+  - 존재하지 않는 `modify_dt`를 참조하던 이전·다음 메서드 제거
+- `blog/models.py`
+  - 게시글 생성 시에만 slug를 자동 생성하도록 수정
+- `blog/views.py`
+  - 게시글 생성·수정 폼에서 사용자가 slug를 직접 입력하지 않도록 수정
+- `blog/templates/blog/post_form.html`
+  - 제거된 slug 입력 영역 삭제
+
+### 사진 및 URL
+
+- `photo/views.py`
+  - 중복 `PhotoDV` 클래스 제거
+  - 사진 생성·수정 시 현재 사용자의 앨범만 선택 가능하도록 제한
+- `photo/urls.py`
+  - 사진 생성 URL에 trailing slash 추가
+
+### 문서 및 저장소 정리
+
+- `README.md`
+  - WBS, 실행 방법, 운영 환경 설정, 이번 수정 내역 추가
+- `__MACOSX/`
+  - Git에 포함되어 있던 macOS 메타파일 제거
+
 ## 1. 프로젝트 개요
 
 | 항목 | 내용 |
