@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "taggit_templatetags2",
     "widget_tweaks",
     "photo.apps.PhotoConfig",
+    "walkmap"
 ]
 
 MIDDLEWARE = [
