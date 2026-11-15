@@ -1,7 +1,7 @@
 from pathlib import Path
 
-# [2026-11-15 수정] 교재(예제 8-5) 형식으로 단순화 + 상대 경로(logs/) 적용
-BASE_DIR = Path(__file__).resolve().parent
+# [2026-11-15 수정] www_dir/ 이동에 맞춰 프로젝트 루트를 parent.parent로 조정
+BASE_DIR = Path(__file__).resolve().parent.parent
 LOG_DIR = BASE_DIR / 'logs'
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
