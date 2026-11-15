@@ -43,20 +43,24 @@ class PostDV(DetailView) :
 class PostAV(ArchiveIndexView) :
     model = Post
     date_field = 'modify_dt'
+    allow_empty = True
 
 class PostYAV(YearArchiveView) :
     model = Post
     date_field = 'modify_dt'
     make_object_list = True
+    allow_empty = True
     #month_format = '%b'
 
 class PostMAV(MonthArchiveView) :
     model = Post
     date_field = 'modify_dt'
+    allow_empty = True
 
 class PostDAV(DayArchiveView) :
     model = Post
     date_field = 'modify_dt'
+    allow_empty = True
 
 class PostTAV(TodayArchiveView) :
     model = Post

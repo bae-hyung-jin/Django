@@ -22,15 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-local-development-key"
-)
+SECRET_KEY = "django-insecure-local-development-key"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['172.25.17.52','localhost','127.0.0.1']
+ALLOWED_HOSTS = ['172.25.17.52', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -142,12 +139,25 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #4개 라인 추가
-CSRF_TRUSTED_ORIGINS = [
-        'http://127.0.0.1:8080', 'http://127.0.0.1',
-        'http://localhost:8080', 'http://localhost',
-        'https://*.app.github.dev',
-        'https://localhost:8000',
+# [2026-11-15 수정] CSRF_TRUSTED_ORIGINS 환경변수 지원 및 운영 모드(DEBUG=False) HTTPS 보안 설정 추가
+_env_csrf_origins = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _env_csrf_origins.split(",") if o.strip()] or [
+    'http://127.0.0.1:8080', 'http://127.0.0.1',
+    'http://localhost:8080', 'http://localhost',
+    'https://*.app.github.dev',
+    'https://localhost:8000',
 ]
+
+# 운영 모드(DJANGO_DEBUG=False)일 때만 적용되는 HTTPS 및 쿠키 보안 설정
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True   # HTTPS 연결에서만 세션 쿠키 전송
+    CSRF_COOKIE_SECURE = True      # HTTPS 연결에서만 CSRF 쿠키 전송
+    # HTTPS 인증서 적용 전 HTTP로 테스트할 때는 DJANGO_SECURE_SSL_REDIRECT=False 로 설정
+    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "True").lower() in ("1", "true", "yes")
+    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "31536000"))  # HSTS 1년
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Nginx 리버스 프록시 HTTPS 헤더 인식
 
 TAGGIT_CASE_INSENSITIVE = True
 TAGGIT_LIMIT = 50 #default=10
@@ -158,9 +168,15 @@ DISQUS_MY_DOMAIN = 'http://127.0.0.1:8000'
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
+# [2026-11-15 수정] 운영 모드(DEBUG=False)에서 mail.E001 오류 방지를 위해 SMTP 백엔드로 자동 전환
 MAILERS = {
     'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+        'BACKEND': os.environ.get(
+            'DJANGO_EMAIL_BACKEND',
+            'django.core.mail.backends.console.EmailBackend'
+            if DEBUG
+            else 'django.core.mail.backends.smtp.EmailBackend',
+        ),
     },
 }
 

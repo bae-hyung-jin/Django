@@ -16,11 +16,13 @@
 
 <div>
     <ul>
-        {%for post in object_list%}
+        {% for post in object_list %}
         <li class="h5">
             {{ post.modify_dt|date:"Y-m-d" }}&emsp;
             <a href="{{ post.get_absolute_url }}"><strong>{{ post.title }}</strong></a>
         </li>
+        {% empty %}
+        <p class="text-muted">아직 작성된 게시글이 없습니다.</p>
         {% endfor %}
     </ul>
 </div>

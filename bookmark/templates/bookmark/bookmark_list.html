@@ -6,9 +6,13 @@
     <h1>Bookmark List</h1>
     <br>
 
+    {% if object_list %}
     <ul>
         {% for bookmark in object_list %}
             <li><a href="{% url 'bookmark:detail' bookmark.id %}">{{ bookmark }}</a></li>
         {% endfor %}
     </ul>
+    {% else %}
+    <h1>내용이 없습니다</h1>
+    {% endif %}
 {% endblock %}
