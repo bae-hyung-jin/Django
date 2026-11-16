@@ -32,6 +32,40 @@
 {%endblock%}
 
 {% block content %}
+<div id="map" class="border rounded mb-4" style="width: 100%; height: 480px;"></div>
+    {{ spots|json_script:"spots-data" }}
+
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_js_key }}"></script>
+<script>
+  const spots = JSON.parse(document.getElementById('spots-data').textContent);
+  const mapContainer = document.getElementById('map');
+  const map = new kakao.maps.Map(mapContainer, {
+    center: new kakao.maps.LatLng(36.6424, 127.4890), // 청주시 중심
+    level: 7
+  });
+
+  const infoWindow = new kakao.maps.InfoWindow({ removable: true });
+
+  spots.forEach((spot) => {
+    const marker = new kakao.maps.Marker({
+      map: map,
+      position: new kakao.maps.LatLng(spot.lat, spot.lng),
+      title: spot.spot_nm
+    });
+
+    kakao.maps.event.addListener(marker, 'click', () => {
+      infoWindow.setContent(`
+        <div style="padding:8px 12px; font-size:13px; min-width:220px;">
+          <strong>[${spot.year}] ${spot.spot_nm}</strong><br>
+          발생 ${spot.occrrnc_cnt}건 / 사상자 ${spot.caslt_cnt}명 / 사망 ${spot.dth_dnv_cnt}명
+        </div>
+      `);
+      infoWindow.open(map, marker);
+    });
+  });
+</script>
+
+
     <div class="home-image">
         <h2 class="title">Django - Python Web Programming</h2>
         <h4 class="powered"><i class="fas fa-arrow-right"></i> Powered by Django and bootstrap</h4>
