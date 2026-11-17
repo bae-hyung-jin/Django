@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     "walkmap",
     # [2026-11-17 추가] 새 사이트용 bookmark 복사본 (label: wm_bookmark)
     "walkmap.bookmark.apps.WmBookmarkConfig",
+    "project.apps.ProjectConfig"
 ]
 
 MIDDLEWARE = [

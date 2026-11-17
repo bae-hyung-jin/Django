@@ -27,7 +27,7 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', RedirectView.as_view(pattern_name='walkmap:home'), name='home'),
+    path('', HomeView.as_view(), name='home'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/register/', UserCreateView.as_view(), name='register'),
     path('accounts/register/done/', UserCreateDoneTV.as_view(), name='register_done'),
@@ -36,6 +36,8 @@ urlpatterns = [
     path('photo/', include('photo.urls')),
     # [2026-11-17 추가] 새 사이트(walkmap). /walkmap/ 이하는 walkmap/urls.py가 처리한다.
     path('walkmap/', include('walkmap.urls')),
+    path('project/', include('project.urls')), 
+    # [2026-11-17 추가] 새 사이트(walkmap)용 project 앱. /project/ 이하는 project/urls.py가 처리한다.
 
     #class-based views
     #path('bookmark/', BookmarkLV.as_view(), name='index'),

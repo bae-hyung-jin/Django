@@ -14,6 +14,18 @@
         {% endblock %}
     </title>
 
+<style>
+    /* 1. 상단 메뉴 글자에 마우스 올렸을 때 (부드러운 연두색) */
+    .navbar-dark .navbar-nav .nav-link:hover {
+        color: #C8E6C9 !important; /* 연한 초록색 글자 */
+    }
+    /* 2. 드롭다운 메뉴 항목을 누르거나 마우스 올렸을 때 파란색 대신 초록색으로! */
+    .dropdown-item:hover, .dropdown-item:focus, .dropdown-item:active {
+        background-color: #2E7D32 !important; /* 내가 정한 숲 초록색 */
+        color: #ffffff !important;
+    }
+</style>
+
     <!-- Bootstrap 4.3.1 CSS -->
     <link
         rel="stylesheet"
@@ -26,23 +38,11 @@
 
 <body style="padding-top: 90px; padding-bottom: 80px;">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #2E7D32;">
 
         <span class="navbar-brand mx-5 mb-0 font-weight-bold font-italic">
-            Django - Python Web Programming
+            산책길 프로젝트
         </span>
-
-        <button
-            class="navbar-toggler"
-            type="button"
-            data-toggle="collapse"
-            data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent"
-            aria-expanded="false"
-            aria-label="메뉴 열기"
-        >
-            <span class="navbar-toggler-icon"></span>
-        </button>
 
         <div
             class="collapse navbar-collapse"
@@ -50,122 +50,55 @@
         >
             <ul class="navbar-nav mr-auto">
 
-            <li class="nav-item mx-1 btn btn-primary">
-            <a class="nav-link text-white" href="{% url 'home' %}">
-                    Home
-              </a>
-            </li>
-                <li class="nav-item mx-1 btn btn-primary">
-                    <a class="nav-link text-white" href="{% url 'bookmark:index' %}">
-                        Bookmark
-                    </a>
-                </li>
-                <li class="nav-item mx-1 btn btn-primary">
-                  <a class="nav-link text-white" href="{% url 'blog:post_list' %}">
-                        Blog
-                    </a>
-                </li>
-
-                <li class="nav-item mx-1 btn btn-primary">
-                  <a class="nav-link text-white" href="{% url 'photo:index' %}">
-                        Photo
-                    </a>
-                </li>
-                            <li class="nav-item dropdown mx-1 btn btn-primary">
-                <a class="nav-link dropdown-toggle text-white" href="#" id="addDropdown"
-                    role="button"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                >
-                    Add
+            <li class="nav-item mx-1">
+                <a class="nav-link text-white" href="{% url 'home' %}">
+                    홈
                 </a>
-
-                <div class="dropdown-menu" aria-labelledby="addDropdown">
-                    <a class="dropdown-item" href="{% url 'bookmark:add' %}">
-                        Bookmark
+            </li>
+            <li class="nav-item mx-1">
+                <a class="nav-link text-white" href="{% url 'project:index' %}">
+                    산책 후기
+                </a>
+            </li>
+            <li class="nav-item mx-1">
+                <a class="nav-link text-white" href="{% url 'project:add' %}">
+                    포스팅 (글쓰기)
+                </a>
+            </li>
+            <li class="nav-item mx-1">
+                <a class="nav-link text-white" href="{% url 'project:change' %}">
+                    내 글 관리
+                </a>
+            </li>
+            <li class="nav-item mx-1">
+                <a class="nav-link text-white" href="{% url 'project:gallery' %}">
+                    사진 (갤러리)
+                </a>
+            </li>
+            <li class="nav-item dropdown mx-1">
+                <a class="nav-link dropdown-toggle text-white" href="#" data-toggle="dropdown">
+                    더보기
+                </a>
+                <div class="dropdown-menu" aria-labelledby="utilDropdown">
+                    <a class="dropdown-item" href="{% url 'admin:index' %}">
+                        관리자
                     </a>
-
-                    <a class="dropdown-item" href="{% url 'blog:add' %}">
-                        Post
-                    </a>
-
                     <div class="dropdown-divider"></div>
-
-                    <a class="dropdown-item" href="{% url 'photo:album_add' %}">
-                        Album
+                    <a class="dropdown-item" href="{% url 'bookmark:index' %}">
+                        예전 북마크
                     </a>
-
-                    <a class="dropdown-item" href="{% url 'photo:photo_add' %}">
-                        Photo
+                    <a class="dropdown-item" href="{% url 'blog:post_list' %}">
+                        예전 블로그
                     </a>
                 </div>
             </li>
-                <li class="nav-item dropdown mx-1 btn btn-primary">
-        <a
-            class="nav-link dropdown-toggle text-white"
-            href="#"
-            id="changeDropdown"
-            role="button"
-            data-toggle="dropdown"
-            aria-haspopup="true"
-            aria-expanded="false"
-        >
-            Change
-        </a>
-
-        <div class="dropdown-menu"
-            aria-labelledby="changeDropdown"
-        >
-            <a class="dropdown-item" href="{% url 'bookmark:change' %}">
-                Bookmark
-            </a>
-
-            <a class="dropdown-item" href="{% url 'blog:change' %}">
-                Post
-            </a>
-
-            <div class="dropdown-divider"></div>
-
-            <a class="dropdown-item" href="{% url 'photo:album_change' %}">
-                Album
-            </a>
-
-            <a class="dropdown-item" href="{% url 'photo:album_change' %}">
-                Photo
-            </a>
-        </div>
-    </li>
-                <li class="nav-item dropdown mx-1 btn btn-primary">
-                    <a class="nav-link dropdown-toggle text-white" href="#" data-toggle="dropdown">
-                        Util
-                    </a>
-
-                    <div
-                        class="dropdown-menu"
-                        aria-labelledby="utilDropdown"
-                    >
-                        <a class="dropdown-item" href="{% url 'admin:index' %}">
-                            Admin
-                        </a>
-
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{% url 'blog:post_archive' %}">
-                            Archive
-                        </a>
-
-                        <a class="dropdown-item" href="{% url 'blog:search' %}">
-                            Search
-                        </a>
-                    </div>
-                </li>
             </ul>
 
-            <form class="form-inline my-2 my-lg-0" action="{% url 'blog:search' %}" method="get">
+            <form class="form-inline my-2 my-lg-0" action="{% url 'project:index' %}" method="get">
                 <input
                     class="form-control mr-sm-2"
                     type="search"
-                    placeholder="Global search"
+                    placeholder="산책 후기 검색"
                     aria-label="Search"
                     name="search_word"
                 >
@@ -178,7 +111,7 @@
                 </button>
             </form>
             <ul class="navbar-nav ml-5 mr-5">
-    <li class="nav-item dropdown mx-1 btn btn-primary">
+    <li class="nav-item dropdown mx-1">
 
         {% if user.is_active %}
             <a

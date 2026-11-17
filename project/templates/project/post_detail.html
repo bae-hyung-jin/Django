@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Post Detail{% endblock %}
+
+{% block content %}
+    <h1>{{ object.title }}</h1>
+    <p class="text-muted">위치: {{ object.location }} | 작성일: {{ object.created_at|date:"Y-m-d H:i" }}</p>
+    <hr>
+
+    {# 사진이 첨부되어 있으면 보여주기 #}
+    {% if object.photo %}
+        <div class="mb-3">
+            <img src="{{ object.photo.url }}" class="img-fluid rounded" style="max-height: 400px;">
+        </div>
+    {% endif %}
+
+    {# 글 내용 #}
+    <p style="white-space: pre-line;">{{ object.content }}</p>
+
+    <hr>
+    <a href="{% url 'project:index' %}" class="btn btn-secondary">목록으로</a>
+{% endblock %}

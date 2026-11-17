@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}산책 후기 작성{% endblock %}
+
+{% block content %}
+    <h2 class="my-4 font-weight-bold">✏️ 산책 후기 작성 / 수정</h2>
+
+    {% if form.errors %}
+        <div class="alert alert-danger">
+            <div class="font-weight-bold">입력 내용을 확인해 주세요.</div>
+            {{ form.errors }}
+        </div>
+    {% endif %}
+
+    <form action="." method="post" enctype="multipart/form-data" class="card p-4">
+        {% csrf_token %}
+
+        <div class="form-group row">
+            {{ form.title|add_label_class:"col-form-label col-sm-2 font-weight-bold" }}
+            <div class="col-sm-8">
+                {{ form.title|add_class:"form-control"|attr:"autofocus" }}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            {{ form.location|add_label_class:"col-form-label col-sm-2 font-weight-bold" }}
+            <div class="col-sm-8">
+                {{ form.location|add_class:"form-control" }}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            {{ form.content|add_label_class:"col-form-label col-sm-2 font-weight-bold" }}
+            <div class="col-sm-8">
+                {{ form.content|add_class:"form-control" }}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            {{ form.photo|add_label_class:"col-form-label col-sm-2 font-weight-bold" }}
+            <div class="col-sm-8">
+                {{ form.photo }}
+            </div>
+        </div>
+
+        <div class="form-group row mb-0">
+            <div class="offset-sm-2 col-sm-8">
+                <button type="submit" class="btn btn-success">등록하기</button>
+                <a href="{% url 'project:index' %}" class="btn btn-secondary">취소</a>
+            </div>
+        </div>
+    </form>
+{% endblock %}

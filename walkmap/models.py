@@ -31,3 +31,24 @@ class AccidentSpot(models.Model):
         return f'[{self.year}] {self.spot_nm} (발생 {self.occrrnc_cnt}건)'
 
 
+# 이천시 횡단보도 모델 (전국횡단보도표준데이터 연동)
+class Crosswalk(models.Model):
+    manage_no = models.CharField('횡단보도 관리번호', max_length=50, unique=True)
+    road_nm = models.CharField('도로명', max_length=100, blank=True, default='')
+    address = models.CharField('소재지 주소', max_length=200, blank=True, default='')
+    length = models.FloatField('횡단보도 연장(m)', default=0.0)  # et (보행 거리)
+    width = models.FloatField('횡단보도 폭(m)', default=0.0)   # bt
+    lanes = models.IntegerField('차로 수', default=0)         # cartrkCo
+    has_signal = models.BooleanField('보행자신호등 유무', default=False)  # tfclghtYn
+    lat = models.FloatField('위도')
+    lng = models.FloatField('경도')
+
+    class Meta:
+        ordering = ['road_nm', 'address']
+        verbose_name = '횡단보도'
+        verbose_name_plural = '횡단보도 목록'
+
+    def __str__(self):
+        return f'{self.road_nm or self.address} ({self.length}m)'
+
+

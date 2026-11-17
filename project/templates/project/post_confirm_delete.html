@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}post_confirm_delete.html{% endblock %}
+
+{% block content %}
+    <h2 class="my-4 font-weight-bold text-danger">🗑️ 산책 후기 삭제</h2>
+    <hr>
+    <form action="." method="post">
+        {% csrf_token %}
+        <p class="lead">정말로 <strong>"{{ object.title }}"</strong> 글을 삭제하시겠습니까?</p>
+        <button type="submit" class="btn btn-danger">삭제 확인</button>
+        <a href="{% url 'project:change' %}" class="btn btn-secondary">취소</a>
+    </form>
+{% endblock %}

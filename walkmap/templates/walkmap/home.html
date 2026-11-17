@@ -7,38 +7,55 @@
 {# 소개 문구 영역 (색: --wm-light, --wm-main) #}
 <div class="wm-hero p-5 my-4 rounded">
     <h1 class="wm-title">Walkmap</h1>
-    <p class="lead mb-0">청주 산책길과 사고다발 지점을 지도로 확인하는 새 사이트입니다.</p>
+    <p class="lead mb-0">이천 산책길과 사고다발 지점을 지도로 확인하는 새 사이트입니다.</p>
 </div>
 
 <!-- 지도 영역 -->
-<div id="map" class="border rounded mb-4" style="width: 100%; height: 480px;"></div>
-    {{ spots|json_script:"spots-data" }}
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <div>
+    <button type="button" id="toggle-spots-btn" class="btn btn-sm btn-outline-danger active mr-1">
+      🚨 사고다발 지점 (<span id="spots-count">0</span>)
+    </button>
+    <button type="button" id="toggle-cw-btn" class="btn btn-sm btn-outline-primary active">
+      🚸 이천시 횡단보도 (<span id="cw-count">0</span>)
+    </button>
+  </div>
+  <small class="text-muted">지도에서 횡단보도 마커를 클릭하면 계산기에 연장(길이)이 자동 입력됩니다.</small>
+</div>
 
-    <!--
-      [2026-11-17 수정] 키가 비어 있으면 SDK가 로드되지 않아 아래 kakao.maps 코드에서
-      "kakao is not defined" 에러가 나고 지도 자리가 빈 칸으로만 보였다.
-      → 키가 없을 때는 원인을 화면에 바로 보여주고 지도 코드는 실행하지 않도록 함.
-      → 주소도 //dapi... 대신 https:// 로 명시 (카카오 공식 예제와 동일).
-    -->
+<div id="map" class="border rounded mb-4" style="width: 100%; height: 500px;"></div>
+    {{ spots|json_script:"spots-data" }}
+    {{ crosswalks|json_script:"crosswalks-data" }}
+
     <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_js_key }}"></script>
 <script>
-  // [2026-11-17 추가] SDK 로드 실패(키 없음 / 플랫폼 도메인 미등록 등) 시 안내 문구 표시
   if (typeof kakao === 'undefined' || !kakao.maps) {
     document.getElementById('map').innerHTML =
-      '<p class="text-danger p-3">카카오맵을 불러오지 못했습니다. ' +
-      '.env의 KAKAO_JS_KEY 값과 카카오 개발자 콘솔의 Web 플랫폼 도메인(http://127.0.0.1:8000)을 확인하세요.</p>';
+      '<p class="text-danger p-3">카카오맵을 불러오지 못했습니다. .env의 KAKAO_JS_KEY 값을 확인하세요.</p>';
     throw new Error('Kakao Maps SDK not loaded');
   }
 
-  const spots = JSON.parse(document.getElementById('spots-data').textContent);
+  const spots = JSON.parse(document.getElementById('spots-data').textContent || '[]');
+  const crosswalks = JSON.parse(document.getElementById('crosswalks-data').textContent || '[]');
+
+  document.getElementById('spots-count').textContent = spots.length;
+  document.getElementById('cw-count').textContent = crosswalks.length;
+
   const mapContainer = document.getElementById('map');
   const map = new kakao.maps.Map(mapContainer, {
-    center: new kakao.maps.LatLng(36.6424, 127.4890), // 청주시 중심
+    center: new kakao.maps.LatLng(37.2721, 127.4350), // 이천시 중심
     level: 7
   });
 
   const infoWindow = new kakao.maps.InfoWindow({ removable: true });
+  const mapTypeControl = new kakao.maps.MapTypeControl();
+  map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
 
+  const zoomControl = new kakao.maps.ZoomControl();
+  map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+  // 1. 사고다발 지점 마커
+  const spotMarkers = [];
   spots.forEach((spot) => {
     const marker = new kakao.maps.Marker({
       map: map,
@@ -48,15 +65,196 @@
 
     kakao.maps.event.addListener(marker, 'click', () => {
       infoWindow.setContent(`
-        <div style="padding:8px 12px; font-size:13px; min-width:220px;">
-          <strong>[${spot.year}] ${spot.spot_nm}</strong><br>
-          발생 ${spot.occrrnc_cnt}건 / 사상자 ${spot.caslt_cnt}명 / 사망 ${spot.dth_dnv_cnt}명
+        <div style="padding:10px 14px; font-size:13px; min-width:230px; line-height:1.6;">
+          <strong class="text-danger">[사고다발 지점]</strong><br>
+          <strong>${spot.spot_nm}</strong> (${spot.year}년)<br>
+          발생 <span class="badge badge-danger">${spot.occrrnc_cnt}건</span> / 사상자 ${spot.caslt_cnt}명 (사망 ${spot.dth_dnv_cnt}명)
         </div>
       `);
       infoWindow.open(map, marker);
     });
+    spotMarkers.push(marker);
+  });
+
+  // 횡단보도 마커용 작은 원형/핀 마커 이미지 (카카오맵 기본 마커 구분)
+  const cwMarkerImageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png';
+  const cwMarkerImageSize = new kakao.maps.Size(20, 31);
+  const cwMarkerImage = new kakao.maps.MarkerImage(cwMarkerImageSrc, cwMarkerImageSize);
+
+  // 2. 횡단보도 마커
+  const cwMarkers = [];
+  crosswalks.forEach((cw) => {
+    const marker = new kakao.maps.Marker({
+      map: map,
+      position: new kakao.maps.LatLng(cw.lat, cw.lng),
+      title: cw.road_nm || cw.address,
+      image: cwMarkerImage
+    });
+
+    kakao.maps.event.addListener(marker, 'click', () => {
+      const signalText = cw.has_signal ? '<span class="badge badge-success">신호등 있음</span>' : '<span class="badge badge-secondary">신호등 없음</span>';
+      infoWindow.setContent(`
+        <div style="padding:10px 14px; font-size:13px; min-width:240px; line-height:1.6;">
+          <strong class="text-primary">🚸 [횡단보도]</strong> ${signalText}<br>
+          <strong>${cw.road_nm || cw.address || '이천시 횡단보도'}</strong><br>
+          ${cw.address ? '<span class="text-muted" style="font-size:11px;">' + cw.address + '</span><br>' : ''}
+          횡단보도 길이: <strong class="text-primary">${cw.length}m</strong> (차로수: ${cw.lanes || '-'}차로)<br>
+          <button type="button" class="btn btn-sm btn-primary btn-block mt-2" onclick="selectCrosswalk(${cw.length}, ${cw.lanes || 0}, '${(cw.road_nm || cw.address || '').replace(/'/g, "\\'")}')">
+            이 횡단보도 분석하기
+          </button>
+        </div>
+      `);
+      infoWindow.open(map, marker);
+
+      // 마커 클릭 시 즉시 계산기에 반영
+      selectCrosswalk(cw.length, cw.lanes || 0, cw.road_nm || cw.address);
+    });
+    cwMarkers.push(marker);
+  });
+
+  // 횡단보도 선택 시 계산기 입력 & 자동 계산
+  window.selectCrosswalk = function(length, lanes, name) {
+    if (!length || length <= 0) return;
+    document.getElementById('cw-length').value = length;
+    if (name) {
+      document.getElementById('cw-target-name').textContent = name + (lanes ? ` (${lanes}차로)` : '');
+      document.getElementById('cw-target-alert').classList.remove('d-none');
+    }
+    // 경찰청 공식 기준(7 + 길이)으로 신호시간 자동 추정값 채우기
+    updateAutoSignal(length);
+    document.getElementById('cw-calc-btn').click();
+  };
+
+  // 마커 표시/숨김 토글
+  let showSpots = true;
+  document.getElementById('toggle-spots-btn').addEventListener('click', (e) => {
+    showSpots = !showSpots;
+    spotMarkers.forEach(m => m.setMap(showSpots ? map : null));
+    e.target.classList.toggle('active', showSpots);
+  });
+
+  let showCw = true;
+  document.getElementById('toggle-cw-btn').addEventListener('click', (e) => {
+    showCw = !showCw;
+    cwMarkers.forEach(m => m.setMap(showCw ? map : null));
+    e.target.classList.toggle('active', showCw);
+  });
+
+  // 지도에서 횡단보도 양 끝 두 점 클릭해 거리(m) 직접 재기
+  let measureMode = false;
+  let measurePoints = [];
+  let measureLine = null;
+
+  kakao.maps.event.addListener(map, 'click', (mouseEvent) => {
+    if (!measureMode) return;
+
+    measurePoints.push(mouseEvent.latLng);
+    if (measurePoints.length > 2) {
+      measurePoints = [mouseEvent.latLng];
+    }
+
+    if (measureLine) measureLine.setMap(null);
+
+    if (measurePoints.length === 2) {
+      measureLine = new kakao.maps.Polyline({
+        map: map,
+        path: measurePoints,
+        strokeWeight: 4,
+        strokeColor: '#dc3545',
+        strokeOpacity: 0.9
+      });
+      const dist = Math.round(measureLine.getLength() * 10) / 10;
+      document.getElementById('cw-length').value = dist;
+      document.getElementById('cw-calc-btn').click();
+      measureMode = false;
+      document.getElementById('cw-measure-btn').textContent = '지도에서 횡단보도 길이 재기';
+    }
   });
 </script>
+
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-light font-weight-bold">
+    어르신 횡단보도 보행 시간 계산기
+  </div>
+  <div class="card-body">
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label for="cw-length">횡단보도 길이 (m)</label>
+        <input type="number" id="cw-length" class="form-control" value="20" min="1" step="0.5">
+      </div>
+      <div class="form-group col-md-4">
+        <label for="cw-speed">어르신 걸음 속도</label>
+        <select id="cw-speed" class="form-control">
+          <option value="0.8" selected>느린 걸음 (0.8 m/s)</option>
+          <option value="1.0">보통 걸음 (1.0 m/s)</option>
+        </select>
+      </div>
+      <div class="form-group col-md-4">
+        <label for="cw-signal">녹색 신호 시간 (초)</label>
+        <input type="number" id="cw-signal" class="form-control" placeholder="비워두면 자동 계산">
+      </div>
+    </div>
+    <button type="button" id="cw-calc-btn" class="btn btn-primary">계산하기</button>
+    <button type="button" id="cw-measure-btn" class="btn btn-outline-danger ml-2">지도에서 길이 재기</button>
+    <div id="cw-result" class="d-none"></div>
+  </div>
+</div>
+
+<script>
+  // 1. 지도에서 횡단보도 길이 직접 재기 토글
+  document.getElementById('cw-measure-btn').addEventListener('click', (e) => {
+    measureMode = !measureMode;
+    measurePoints = [];
+    if (measureLine) measureLine.setMap(null);
+    e.target.textContent = measureMode ? '지도에서 두 점 클릭 (취소)' : '지도에서 길이 재기';
+  });
+
+  // 2. 계산 버튼 클릭 로직
+  document.getElementById('cw-calc-btn').addEventListener('click', () => {
+    const length = parseFloat(document.getElementById('cw-length').value);
+    const speed = parseFloat(document.getElementById('cw-speed').value);
+    let signal = parseFloat(document.getElementById('cw-signal').value);
+    const resultBox = document.getElementById('cw-result');
+
+    if (!length || length <= 0) {
+      resultBox.className = 'alert alert-warning mt-3 mb-0';
+      resultBox.textContent = '횡단보도 길이를 입력해 주세요.';
+      return;
+    }
+
+    // 신호 시간이 없으면 대략 (기본 7초 + 길이)로 자동 계산
+    if (!signal || signal <= 0) {
+      signal = Math.round(7 + length);
+      document.getElementById('cw-signal').value = signal;
+    }
+
+    // 횡단에 걸리는 시간 = 거리 ÷ 속도
+    const timeNeeded = (length / speed).toFixed(1);
+    const diff = (signal - timeNeeded).toFixed(1);
+
+    if (diff >= 0) {
+      resultBox.className = 'alert alert-success mt-3 mb-0';
+      resultBox.innerHTML = `
+        <strong>🟢 안전합니다!</strong><br>
+        횡단보도(${length}m)를 건너는 데 약 <strong>${timeNeeded}초</strong> 걸립니다.<br>
+        신호 시간(${signal}초)보다 <strong>${diff}초 여유</strong>가 있습니다.
+      `;
+    } else {
+      resultBox.className = 'alert alert-danger mt-3 mb-0';
+      resultBox.innerHTML = `
+        <strong>🔴 시간이 부족해요! (주의)</strong><br>
+        횡단보도(${length}m)를 건너는 데 약 <strong>${timeNeeded}초</strong>가 필요한데, 
+        신호 시간(${signal}초)이 <strong>${Math.abs(diff)}초 부족</strong>합니다.
+      `;
+    }
+  });
+
+  // 처음 들어왔을 때 기본 20m로 1번 계산
+  document.getElementById('cw-calc-btn').click();
+</script>
+
+
 
 {# 앞으로 만들 기능 3개 안내. 화면이 완성되면 링크를 건다 #}
 <div class="row">
