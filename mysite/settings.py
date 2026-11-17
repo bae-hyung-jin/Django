@@ -16,6 +16,13 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# [2026-11-17 추가] 프로젝트 루트(manage.py와 같은 폴더)의 .env 파일을 읽어서
+# KAKAO_JS_KEY, DATA_GO_KR_KEY 같은 값을 환경변수(os.environ)로 등록한다.
+# .env는 .gitignore에 들어 있어 GitHub에 올라가지 않는다.
+# 필요 패키지: pip install python-dotenv
+from dotenv import load_dotenv
+load_dotenv(BASE_DIR / ".env")
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
