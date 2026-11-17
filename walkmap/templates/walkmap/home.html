@@ -1,0 +1,67 @@
+{# [2026-11-17 추가] 새 사이트 홈(소개) 화면. 주소: /walkmap/  (walkmap/urls.py → WalkmapHomeView) #}
+{% extends 'walkmap/base.html' %}
+
+{% block title %}Walkmap - Home{% endblock %}
+
+{% block content %}
+{# 소개 문구 영역 (색: --wm-light, --wm-main) #}
+<div class="wm-hero p-5 my-4 rounded">
+    <h1 class="wm-title">Walkmap</h1>
+    <p class="lead mb-0">청주 산책길과 사고다발 지점을 지도로 확인하는 새 사이트입니다.</p>
+</div>
+
+<!-- 지도 영역 -->
+<div id="map" class="border rounded mb-4" style="width: 100%; height: 480px;"></div>
+    {{ spots|json_script:"spots-data" }}
+
+    <!--
+      [2026-11-17 수정] 키가 비어 있으면 SDK가 로드되지 않아 아래 kakao.maps 코드에서
+      "kakao is not defined" 에러가 나고 지도 자리가 빈 칸으로만 보였다.
+      → 키가 없을 때는 원인을 화면에 바로 보여주고 지도 코드는 실행하지 않도록 함.
+      → 주소도 //dapi... 대신 https:// 로 명시 (카카오 공식 예제와 동일).
+    -->
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_js_key }}"></script>
+<script>
+  // [2026-11-17 추가] SDK 로드 실패(키 없음 / 플랫폼 도메인 미등록 등) 시 안내 문구 표시
+  if (typeof kakao === 'undefined' || !kakao.maps) {
+    document.getElementById('map').innerHTML =
+      '<p class="text-danger p-3">카카오맵을 불러오지 못했습니다. ' +
+      '.env의 KAKAO_JS_KEY 값과 카카오 개발자 콘솔의 Web 플랫폼 도메인(http://127.0.0.1:8000)을 확인하세요.</p>';
+    throw new Error('Kakao Maps SDK not loaded');
+  }
+
+  const spots = JSON.parse(document.getElementById('spots-data').textContent);
+  const mapContainer = document.getElementById('map');
+  const map = new kakao.maps.Map(mapContainer, {
+    center: new kakao.maps.LatLng(36.6424, 127.4890), // 청주시 중심
+    level: 7
+  });
+
+  const infoWindow = new kakao.maps.InfoWindow({ removable: true });
+
+  spots.forEach((spot) => {
+    const marker = new kakao.maps.Marker({
+      map: map,
+      position: new kakao.maps.LatLng(spot.lat, spot.lng),
+      title: spot.spot_nm
+    });
+
+    kakao.maps.event.addListener(marker, 'click', () => {
+      infoWindow.setContent(`
+        <div style="padding:8px 12px; font-size:13px; min-width:220px;">
+          <strong>[${spot.year}] ${spot.spot_nm}</strong><br>
+          발생 ${spot.occrrnc_cnt}건 / 사상자 ${spot.caslt_cnt}명 / 사망 ${spot.dth_dnv_cnt}명
+        </div>
+      `);
+      infoWindow.open(map, marker);
+    });
+  });
+</script>
+
+{# 앞으로 만들 기능 3개 안내. 화면이 완성되면 링크를 건다 #}
+<div class="row">
+    <div class="col-sm-4"><h4 class="wm-title">Map</h4><p>카카오맵 + 사고다발 지점</p></div>
+    <div class="col-sm-4"><h4 class="wm-title">Bookmark</h4><p>자주 가는 장소 저장</p></div>
+    <div class="col-sm-4"><h4 class="wm-title">Photo</h4><p>산책 사진 앨범</p></div>
+</div>
+{% endblock %}

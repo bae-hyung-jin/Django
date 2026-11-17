@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from mysite.views import HomeView, UserCreateView, UserCreateDoneTV
+from django.views.generic import RedirectView
+
 
 from django.conf.urls.static import static
 from django.conf import settings
@@ -25,13 +27,15 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', HomeView.as_view(), name='home'),
+    path('', RedirectView.as_view(pattern_name='walkmap:home'), name='home'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/register/', UserCreateView.as_view(), name='register'),
     path('accounts/register/done/', UserCreateDoneTV.as_view(), name='register_done'),
     path('bookmark/', include('bookmark.urls')),
     path('blog/', include('blog.urls')),
     path('photo/', include('photo.urls')),
+    # [2026-11-17 추가] 새 사이트(walkmap). /walkmap/ 이하는 walkmap/urls.py가 처리한다.
+    path('walkmap/', include('walkmap.urls')),
 
     #class-based views
     #path('bookmark/', BookmarkLV.as_view(), name='index'),

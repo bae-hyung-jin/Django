@@ -1,0 +1,80 @@
+{# [2026-11-17 추가] 새 사이트 지도 화면. 주소: /walkmap/map/  (walkmap/map/urls.py → MapView) #}
+{# 한 화면에 위쪽은 카카오 지도, 아래쪽은 사고다발 지점 표를 보여준다. #}
+{% extends 'walkmap/base.html' %}
+
+{% block title %}Walkmap - Map{% endblock %}
+
+{% block content %}
+{# 지도 영역: 원래 home.html 에 있던 코드를 그대로 옮겨 옴 (MapView 가 kakao_js_key, spots 를 넘겨줌) #}
+<!-- 지도 영역 -->
+<div id="map" class="border rounded mb-4" style="width: 100%; height: 480px;"></div>
+    {{ spots|json_script:"spots-data" }}
+
+    <!--
+      [2026-11-17 수정] 키가 비어 있으면 SDK가 로드되지 않아 아래 kakao.maps 코드에서
+      "kakao is not defined" 에러가 나고 지도 자리가 빈 칸으로만 보였다.
+      → 키가 없을 때는 원인을 화면에 바로 보여주고 지도 코드는 실행하지 않도록 함.
+      → 주소도 //dapi... 대신 https:// 로 명시 (카카오 공식 예제와 동일).
+    -->
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_js_key }}"></script>
+<script>
+  // [2026-11-17 추가] SDK 로드 실패(키 없음 / 플랫폼 도메인 미등록 등) 시 안내 문구 표시
+  if (typeof kakao === 'undefined' || !kakao.maps) {
+    document.getElementById('map').innerHTML =
+      '<p class="text-danger p-3">카카오맵을 불러오지 못했습니다. ' +
+      '.env의 KAKAO_JS_KEY 값과 카카오 개발자 콘솔의 Web 플랫폼 도메인(http://127.0.0.1:8000)을 확인하세요.</p>';
+    throw new Error('Kakao Maps SDK not loaded');
+  }
+
+  const spots = JSON.parse(document.getElementById('spots-data').textContent);
+  const mapContainer = document.getElementById('map');
+  const map = new kakao.maps.Map(mapContainer, {
+    center: new kakao.maps.LatLng(36.6424, 127.4890), // 청주시 중심
+    level: 7
+  });
+
+  const infoWindow = new kakao.maps.InfoWindow({ removable: true });
+
+  spots.forEach((spot) => {
+    const marker = new kakao.maps.Marker({
+      map: map,
+      position: new kakao.maps.LatLng(spot.lat, spot.lng),
+      title: spot.spot_nm
+    });
+
+    kakao.maps.event.addListener(marker, 'click', () => {
+      infoWindow.setContent(`
+        <div style="padding:8px 12px; font-size:13px; min-width:220px;">
+          <strong>[${spot.year}] ${spot.spot_nm}</strong><br>
+          발생 ${spot.occrrnc_cnt}건 / 사상자 ${spot.caslt_cnt}명 / 사망 ${spot.dth_dnv_cnt}명
+        </div>
+      `);
+      infoWindow.open(map, marker);
+    });
+  });
+</script>
+
+{# 사고다발 API 표: 지도와 같은 spots 데이터를 {% for %} 로 한 줄씩 출력. 길어지면 칸 안에서 스크롤 #}
+<div class="mt-4" style="max-height: 400px; overflow-y: auto;">
+  <h4 class="wm-title">사고다발 지점</h4>
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr><th>연도</th><th>구</th><th>지점명</th><th>발생</th><th>사상자</th><th>사망</th></tr>
+    </thead>
+    <tbody>
+      {% for s in spots %}
+      <tr>
+        <td>{{ s.year }}</td>
+        <td>{{ s.gu_name }}</td>
+        <td>{{ s.spot_nm }}</td>
+        <td>{{ s.occrrnc_cnt }}</td>
+        <td>{{ s.caslt_cnt }}</td>
+        <td>{{ s.dth_dnv_cnt }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="text-center">데이터가 없습니다.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
