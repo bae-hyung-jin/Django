@@ -1,0 +1,27 @@
+{# [2026-11-17 추가] 새 사이트용 복사본. 틀: walkmap/base.html, 주소 이름: walkmap:wm_bookmark: #}
+{% extends "walkmap/base.html" %}
+
+{% block title %}bookmark_list.html{% endblock %}
+
+{% block content %}
+    {# 소개 영역 (색: walkmap/base.html 의 --wm-light, --wm-main) #}
+    <div class="wm-hero p-5 my-4 rounded">
+        <h1 class="wm-title">북마크</h1>
+        <p class="lead mb-0">북마크한 장소를 확인하세요.</p>
+    </div>
+    {# 추가/관리 버튼 (로그인해야 동작) #}
+    <p>
+        <a class="btn btn-success btn-sm" href="{% url 'walkmap:wm_bookmark:add' %}">추가</a>
+        <a class="btn btn-outline-success btn-sm" href="{% url 'walkmap:wm_bookmark:change' %}">내 북마크 관리</a>
+    </p>
+
+    {% if object_list %}
+    <ul>
+        {% for bookmark in object_list %}
+            <li><a href="{% url 'walkmap:wm_bookmark:detail' bookmark.id %}">{{ bookmark }}</a></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <h1>내용이 없습니다</h1>
+    {% endif %}
+{% endblock %}

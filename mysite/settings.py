@@ -20,8 +20,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # KAKAO_JS_KEY, DATA_GO_KR_KEY 같은 값을 환경변수(os.environ)로 등록한다.
 # .env는 .gitignore에 들어 있어 GitHub에 올라가지 않는다.
 # 필요 패키지: pip install python-dotenv
-from dotenv import load_dotenv
-load_dotenv(BASE_DIR / ".env")
+#
+# [2026-11-17 수정 - 카카오맵 안 뜨던 문제]
+# 원인: .env의 KAKAO_JS_KEY가 os.environ에 들어가지 않아서 home.html에
+#       <script src="...sdk.js?appkey="> 처럼 키가 빈 값으로 들어갔다.
+#       → 카카오 SDK가 로드되지 않아 지도가 안 뜸.
+# 수정: python-dotenv가 설치돼 있으면 그걸 쓰고, 설치가 안 된 파이썬
+#       (예: Homebrew python3)으로 runserver 해도 .env를 직접 읽도록 대체 코드를 둔다.
+#       그래서 dotenv가 없다고 서버가 ModuleNotFoundError로 죽지도 않는다.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / ".env")
+except ModuleNotFoundError:
+    _env_path = BASE_DIR / ".env"
+    if _env_path.exists():
+        for _line in _env_path.read_text(encoding="utf-8").splitlines():
+            _line = _line.strip()
+            if not _line or _line.startswith("#") or "=" not in _line:
+                continue  # 빈 줄, 주석, 형식이 틀린 줄은 건너뜀
+            _key, _value = _line.split("=", 1)
+            # 이미 터미널에서 export 한 값이 있으면 그걸 우선 (python-dotenv와 동일한 동작)
+            os.environ.setdefault(_key.strip(), _value.strip().strip('"').strip("'"))
 
 
 # Quick-start development settings - unsuitable for production
@@ -57,7 +76,9 @@ INSTALLED_APPS = [
     "taggit_templatetags2",
     "widget_tweaks",
     "photo.apps.PhotoConfig",
-    "walkmap"
+    "walkmap",
+    # [2026-11-17 추가] 새 사이트용 bookmark 복사본 (label: wm_bookmark)
+    "walkmap.bookmark.apps.WmBookmarkConfig",
 ]
 
 MIDDLEWARE = [

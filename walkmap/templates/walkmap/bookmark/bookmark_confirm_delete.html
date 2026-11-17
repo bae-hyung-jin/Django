@@ -1,0 +1,16 @@
+{# [2026-11-17 추가] 새 사이트용 복사본. 틀: walkmap/base.html, 주소 이름: walkmap:wm_bookmark: #}
+{% extends "walkmap/base.html" %}
+
+{% block title %}bookmark_confirm_delete.html{% endblock %}
+
+{% block content %}
+
+<h1>Bookmark Delete</h1>
+<br>
+
+<form action="." method="post">{% csrf_token %}
+    <p>Are you sure you want to delete "{{ object }}"?</p>
+    <input type="submit" value="Confirm" class="btn btn-danger btn-sm"/>
+</form>
+
+{% endblock %}
