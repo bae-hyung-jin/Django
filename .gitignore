@@ -9,11 +9,11 @@ venv/
 env/
 
 # Django database
-db.sqlite3
+# db.sqlite3          <-- # 붙이기 (내가 쓴 후기 글 DB 같이 올리기)
 db.sqlite3-journal
 
 # Environment variables
-.env
+# .env                <-- # 붙이기 (API 키 같이 올리기)
 .env.*
 
 # Logs
@@ -26,6 +26,6 @@ db.sqlite3-journal
 .vscode/
 
 # User-uploaded files
-media/
+# media/              <-- # 붙이기 (올린 산책 사진 같이 올리기)
 
 .claude/
